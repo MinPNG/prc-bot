@@ -10,10 +10,13 @@ def save_file(save):
     file.close()
 
 def load_file():
-    with open('save.txt',"r") as input:
-            out = json.load(input)
-    input.close()
-    return out
+    try:
+        with open('save.txt',"r") as input:
+                out = json.load(input)
+        input.close()
+        return out
+    except:
+        return []
 
 #Error default respone
 error = ("reply","Something wrong, try again")
