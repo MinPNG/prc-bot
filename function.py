@@ -135,7 +135,7 @@ def do(arg):
                 return ("reply",name + " already done daily")
         if not db[nameset.index(name)]["done"]:
                 db[nameset.index(name)]["done"] = True
-                save_file()
+                save_file(db)
                 return ("react","✅")
     return error
 
@@ -152,11 +152,25 @@ def undo(arg):
                 return ("reply",name + " already undone")
         if db[nameset.index(name)]["done"]:
                 db[nameset.index(name)]["done"] = False
-                save_file()
+                save_file(db)
                 return ("react","✅")
     return error
 
 def reset(arg):
+    option = "default" if arg == [] else arg.pop(0)
+    match option:
+        case "default":
+            for item in db:
+                item["done"] = False
+            return ("react","✅")
+        case "alias":
+            if arg == []:
+                return ("reply","name required")
+            name = arg.pop(0)
+            db[nameset.index(name)]["alias"] = []
+            save_file(db)
+            return ("react","✅")
+
     return ("reply","Work on progress")
 
 def help(arg):
