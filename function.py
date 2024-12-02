@@ -40,8 +40,18 @@ def add(arg):
     if arg != []:
         option = arg.pop(0)
         match option:
-            case "clone":
+            case "alias":
                 name = arg.pop(0)
+                for alias in arg:
+                    if alias in aliasset:
+                        return ("reply",alias + " is already existed as an alias")
+                if arg != []:
+                    for item in db:
+                        if item["name"] == name:
+                                item["alias"].append(alias)
+                                aliasset.append(alias)
+            case _:
+                name = option
                 if name in nameset:
                     return ("reply","This clone is already added")
                 aliases = []
@@ -54,20 +64,13 @@ def add(arg):
                     {
                         "name":name,
                         "alias":aliases,
-                        "done":False
+                        "done":False,
+                        "daily_at": 0,
+                        "last_daily":0
                     }
                 )
                 nameset.append(name)
-            case "alias":
-                name = arg.pop(0)
-                for alias in arg:
-                    if alias in aliasset:
-                        return ("reply",alias + " is already existed as an alias")
-                if arg != []:
-                    for item in db:
-                        if item["name"] == name:
-                                item["alias"].append(alias)
-                                aliasset.append(alias)
+
         try:
             save_file(db)
         except:
@@ -109,8 +112,11 @@ def change(arg):
 
 def check(arg):
     if arg == []:
-        print(db)
-        return ("reply", str(db))
+        not_daily = " "
+        for item in db:
+            if not is_pass_reset(item["daily_at"]):
+                not_daily += item["name"] + " \n"
+        return ("reply","Not done : \n" + not_daily)
     match arg[0]:
             case "reset":
                 return ("reply","Reset daily in ||<t:" + str(get_next_reset_timestamp()) +":R>||")
@@ -118,9 +124,9 @@ def check(arg):
                 name = arg.pop(0)
                 if  name not in nameset:
                     return ("reply",name + " doesn't exist, Try again")
-                if db[nameset.index(name)]["done"]:
+                if is_pass_reset(db[nameset.index(name)]["daily_at"]):
                     return ("reply",name + " daily done")
-                if not db[nameset.index(name)]["done"]:
+                if not is_pass_reset(db[nameset.index(name)]["daily_at"]):
                     return ("reply",name + " daily not done")
                 
     return ("reply","Cannot check")
@@ -134,12 +140,10 @@ def do(arg):
             if name not in aliasset:
                 return("reply", name + "not found, Please try again")
             name = get_name_from_alias(name)
-        if db[nameset.index(name)]["done"]:
-                return ("reply",name + " already done daily")
-        if not db[nameset.index(name)]["done"]:
-                db[nameset.index(name)]["done"] = True
-                save_file(db)
-                return ("react","✅")
+        db[nameset.index(name)]["last_daily"] = db[nameset.index(name)]["daily_at"]
+        db[nameset.index(name)]["daily_at"] = time.time()
+        save_file(db)     
+        return ("react","✅")
     return error
 
 def undo(arg):
@@ -151,12 +155,9 @@ def undo(arg):
             if name not in aliasset:
                 return("reply", name + "not found, Please try again")
             name = get_name_from_alias(name)
-        if not db[nameset.index(name)]["done"]:
-                return ("reply",name + " already undone")
-        if db[nameset.index(name)]["done"]:
-                db[nameset.index(name)]["done"] = False
-                save_file(db)
-                return ("react","✅")
+        db[nameset.index(name)]["daily_at"] = db[nameset.index(name)]["last_daily"]
+        save_file(db)
+        return ("react","✅")
     return error
 
 def reset(arg):
@@ -185,11 +186,21 @@ def get_next_reset_timestamp():
     reset_time = timegm(reset_time.utctimetuple())
     return reset_time if reset_time > time.time() else reset_time + 86400
 
+def get_previous_reset_timestamp():
+    current_time = datetime.now(jp_tzone)
+    reset_time = datetime(current_time.year,current_time.month,current_time.day,5,0,0,0,tzinfo=jp_tzone)
+    reset_time = timegm(reset_time.utctimetuple())
+    return reset_time if reset_time < time.time() else reset_time - 86400
+
 def get_name_from_alias(alias):
     for item in db:
         if alias in item["alias"]:
             return item["name"]
     return None
+
+def is_pass_reset(timestamp):
+    reset_timestamp = get_previous_reset_timestamp()
+    return timestamp > reset_timestamp
 
 
 if __name__ == "__main__":
