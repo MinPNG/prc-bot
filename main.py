@@ -27,7 +27,7 @@ class MyClient(discord.Client):
     
     @tasks.loop(time=alert_time)
     async def my_task(self):
-        message = check('')[1]
+        message = check([])[1]
         await self.channel.send(message)
 
 def message_handler(message):
