@@ -116,7 +116,7 @@ def check(arg):
         for item in db:
             if not is_pass_reset(item["daily_at"]):
                 not_daily += item["name"] + " \n"
-        return ("reply","Not done : \n" + not_daily)
+        return ("reply","These accounts are not done, Please try to finish daily before reset : \n" + not_daily)
     match arg[0]:
             case "reset":
                 return ("reply","Reset daily in ||<t:" + str(get_next_reset_timestamp()) +":R>||")
