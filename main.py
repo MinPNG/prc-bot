@@ -38,7 +38,6 @@ class MyClient(discord.Client):
                     channel_id = dict["channel"][2:-1]
                     print(channel_id)
                     self.channel = self.get_channel(int(channel_id))
-                    await msg.channel.send("Channel = " + channel_id)
             case "reply":
                 await msg.channel.send(args[0])
             case "react":
