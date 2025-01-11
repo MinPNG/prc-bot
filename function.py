@@ -169,13 +169,27 @@ def reset(arg):
             return ("react","✅")
         case "alias":
             if arg == []:
-                return ("reply","name required")
+                return ("reply","Name required")
             name = arg.pop(0)
             db[nameset.index(name)]["alias"] = []
             save_file(db)
             return ("react","✅")
+        case _:
+            return ("reply","Work in progress or function not available")
 
-    return ("reply","Work on progress")
+def get(arg):
+    if arg == []:
+        return ("reply","Argument required")
+    option = arg.pop(0)
+    match(option):
+        case "channel":
+            channel = arg.pop(0)
+            if channel == []:
+                return ("reply","Channel required")
+            if arg == []:
+                return ("assign",{"channel":channel})
+        case _:
+            return ("replay","Work in progress or function not available")
 
 def help(arg):
     return ("reply","Pls ping MinPNG for a clear instruction because he was too lazy to write a help command")
